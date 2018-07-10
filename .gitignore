@@ -1,0 +1,10 @@
+# Distribution / packaging
+.Python
+env/
+lib/
+
+# virtualenv
+.venv
+venv/
+ENV/
+
