@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request
 from flask_restful import Resource, Api
+
 import json
-from operator import itemgetter
+
+from excecaoGenerica import ExcecaoGenerica
+from utils import Utils
 
 app = Flask(__name__)
 api = Api(app)
@@ -10,9 +13,11 @@ api = Api(app)
 def calcula_custo(tempo_min, custo_hora):
 	"""Calcula custo de uma tarefa.
 	Argumentos:
-	tempo_min -- Tempo em minutos da duração da tarefa
-	custo_hora -- Custo por hora para execução da tarefa 
+		tempo_min -- Tempo em minutos da duração da tarefa
+		custo_hora -- Custo por hora para execução da tarefa 
 	"""
+	Utils._assert(tempo_min < 0 or custo_hora < 0,
+                      "Dados inválidos", ExcecaoGenerica)
 	return (tempo_min * custo_hora)/60
 
 def calculaCustos(tarefas):
@@ -21,7 +26,7 @@ def calculaCustos(tarefas):
 	Retorna dicionário ordenado no qual as chaves são os identificadores
 	e os valores são os respectivos custos totais de cada tarefa.
 	Argumentos:
-	tarefas -- lista de tarefas a serem calculadas
+		tarefas -- lista de tarefas a serem calculadas
 	"""
 	dict_custo_total = {}
 	for tarefa in tarefas:
@@ -38,9 +43,9 @@ def ordenaTarefasCustoHora(tarefas, lista_de_execucao):
 	das tarefas, remove a tarefa mais barata de ser executada primeiro a cada iteração 
 	da lista de tarefas e adicina na lista de execução.
 	Argumentos:
-	tarefas -- lista de tarefas a serem ordenadas
-	lista_de_execucao -- lista a ser preenchida com identificadores ordenados com base no custo
-	size -- tamanho da lista de tarefas
+		tarefas -- lista de tarefas a serem ordenadas
+		lista_de_execucao -- lista a ser preenchida com identificadores ordenados com base no custo
+		size -- tamanho da lista de tarefas
 	"""
 	while (len(tarefas) > 0):
 		custos_totais_ordenados = calculaCustos(tarefas)
@@ -64,9 +69,10 @@ class OrdenaTarefasHandler(Resource):
 	
 	def post(self):
 		tarefas_ordenadas = {}
+		
 		tarefas = request.get_json()['tarefas']
 		tarefas_ordenadas['menor_tempo_espera'] = ordenaTarefasMenorTempoEspera(tarefas)
 		tarefas_ordenadas['menor_custo_espera'] = ordenaTarefasCustoHora(tarefas, [])
 		return tarefas_ordenadas
 
-api.add_resource(OrdenaTarefasHandler, '/api/custo_por_hora')
+api.add_resource(OrdenaTarefasHandler, '/api/custo')

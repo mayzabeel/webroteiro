@@ -8,3 +8,8 @@ lib/
 venv/
 ENV/
 
+# Python Tools for Visual Studio (PTVS)
+*.pyc
+
+.env_cleaned
+.vscode/**
