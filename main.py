@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request
+from flask import Flask, request
 from flask_restful import Resource, Api
 
 import json
@@ -20,23 +20,25 @@ def calcula_custo(tempo_min, custo_hora):
                       "Dados inválidos", ExcecaoGenerica)
 	return (tempo_min * custo_hora)/60
 
-def calculaCustos(tarefas):
-	"""Calcula o custo total de cada tarefa supondo que a 
-	tarefa seja a primeira a ser executada, ignorando o seu próprio custo.
-	Retorna dicionário ordenado no qual as chaves são os identificadores
-	e os valores são os respectivos custos totais de cada tarefa.
+def get_tarefa_mais_barata(tarefas):
+	"""Retorna tarefa mais barata de ser executada primeiro.
 	Argumentos:
 		tarefas -- lista de tarefas a serem calculadas
 	"""
 	dict_custo_total = {}
+	tarefa_barata = {}
 	for tarefa in tarefas:
     		tarefa_id = tarefa['identificador']
 		if not (dict_custo_total.has_key(tarefa_id)):
-			dict_custo_total[tarefa_id] = 0
+			dict_custo_total[tarefa_id] = {'tarefa': tarefa, 'custo': 0}
 			for outra_tarefa in tarefas:
 				if (outra_tarefa['identificador'] != tarefa_id):
-					dict_custo_total[tarefa_id] += calcula_custo(tarefa['tempo_de_execucao'], outra_tarefa['custo_por_hora'])
-	return sorted(dict_custo_total, key = dict_custo_total.get)
+					dict_custo_total[tarefa_id]['custo'] += calcula_custo(tarefa['tempo_de_execucao'], outra_tarefa['custo_por_hora'])
+
+		if (tarefa_barata == {} or (tarefa_barata['custo'] > dict_custo_total[tarefa_id]['custo'])):
+			tarefa_barata = dict_custo_total[tarefa_id]
+
+	return tarefa_barata['tarefa']
 
 def ordenaTarefasCustoHora(tarefas, lista_de_execucao):
 	""" Preenche ordenadamente a lista de execução e a retorna. Para isso calcula o custo
@@ -45,24 +47,19 @@ def ordenaTarefasCustoHora(tarefas, lista_de_execucao):
 	Argumentos:
 		tarefas -- lista de tarefas a serem ordenadas
 		lista_de_execucao -- lista a ser preenchida com identificadores ordenados com base no custo
-		size -- tamanho da lista de tarefas
 	"""
 	while (len(tarefas) > 0):
-		custos_totais_ordenados = calculaCustos(tarefas)
-		lista_de_execucao.append(custos_totais_ordenados[0])
-		filter_iter = filter(lambda tarefa: tarefa['identificador'] == custos_totais_ordenados[0], tarefas)
-		executada = filter_iter[0]
-		indice = tarefas.index(executada)
-		del tarefas[indice]
+		tarefa = get_tarefa_mais_barata(tarefas)
+		lista_de_execucao.append(tarefa['identificador'])
+		tarefas.remove(tarefa)
 	return lista_de_execucao
 
 def ordenaTarefasMenorTempoEspera(tarefas):
 	"""Ordena tarefas com base no menor tempo de execução, executar as tarefas mais curtas
 	primeiro, diminui os somatórios de tempo de espera."""
-	tarefas_ordenadas = []
-	for tarefa in sorted(tarefas, key = lambda i: i['tempo_de_execucao']):
-		tarefas_ordenadas.append(tarefa['identificador'])
-	return tarefas_ordenadas
+	tarefas_ordenadas_por_tempo = sorted(tarefas, key = lambda i: i['tempo_de_execucao'])
+	identificadores_tarefas_ordenadas = [tarefa['identificador'] for tarefa in tarefas_ordenadas_por_tempo]
+	return identificadores_tarefas_ordenadas
 	
 class OrdenaTarefasHandler(Resource):
 	"""Handler responsável por ordenar tarefas"""

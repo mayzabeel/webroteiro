@@ -13,3 +13,7 @@ handlers:
 - url: /(.+)
   static_files: app/\1
   upload: app/.*
+
+- url: /
+  static_files: app/index.html
+  upload: app/index.html

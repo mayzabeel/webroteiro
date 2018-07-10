@@ -1,0 +1,34 @@
+<! doctype html>
+<html>
+  <head>
+    <title>Planejamento Roteiro</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <link rel="stylesheet" type="text/css" href="/static/style.css">
+  </head>
+  <body>
+    <div id="container">
+      <div class="pagetitle">
+        <h1>Planejamento Roteiro API</h1>
+      </div>
+      <h3>Código disponível: <a href="https://github.com/mayzabeel/webroteiro">Github</a></h3>
+      <h3>API Disponível: <a href="http://webroteiro.appspot.com">API</a></h3>
+      <h3>Método POST para planejar roteiros no endereço: <a> http://webroteiro.appspot.com/api/custo</a></h3>
+      <h4>Técnologias utilizadas: Flask,Github,Google App Engine</h4>
+      <h4>Linguagem utilizadas: Python</h4>
+      <div>
+        <h1>Exemplos de execução com cURL</h1>
+        <p>
+          curl -H "Content-Type: application/json " -X POST -d  '{"tarefas":[ {"identificador":"a","tempo_de_execucao":420,"custo_por_hora":200},{"identificador":"b","tempo_de_execucao":120,"custo_por_hora":100},{"identificador":"c","tempo_de_execucao":1200,"custo_por_hora":2},{"identificador":"d","tempo_de_execucao":1800,"custo_por_hora":4}, {"identificador":"e","tempo_de_execucao":300,"custo_por_hora":8}]}' http://webroteiro.appspot.com/api/custo
+        </p>
+        <p>
+          Saída esperada: {"menor_tempo_espera": ["b", "e", "a", "c", "d"], "menor_custo_espera": ["b", "a", "e", "d", "c"]</p>
+        <p>
+          curl -H "Content-Type: application/json " -X POST -d  '{"tarefas":[ {"identificador":"Refile Manual","tempo_de_execucao":60,"custo_por_hora":30},{"identificador":"Impressão","tempo_de_execucao":30,"custo_por_hora":40},{"identificador":"Acabamento","tempo_de_execucao":40,"custo_por_hora":20}]}' http://webroteiro.appspot.com/api/custo
+        </p>
+        <p>
+          Saída Esperada: {"menor_tempo_espera": ["Impressão", "Acabamento", "Refile Manual"], "menor_custo_espera": ["Impressão", "Refile Manual", "Acabamento"]}
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
